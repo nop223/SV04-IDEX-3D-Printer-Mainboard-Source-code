@@ -76,7 +76,7 @@ static void event_handler(lv_obj_t *obj, lv_event_t event) {
     case ID_INFO_EXT:  uiCfg.curTempType = 0; lv_draw_preHeat(); break;
     case ID_INFO_BED:  uiCfg.curTempType = 1; lv_draw_preHeat(); break;
     case ID_INFO_FAN:  lv_draw_fan(); break;
-    case ID_PRINT: TERN(MULTI_VOLUME, lv_draw_media_select(), lv_draw_print_file()); break;
+    case ID_PRINT: TERN(HAS_MULTI_VOLUME, lv_draw_media_select(), lv_draw_print_file()); break;
   }
 }
 
@@ -196,7 +196,7 @@ void lv_draw_ready_print() {
       buttonExt2 = lv_big_button_create(scr, "F:/bmp_ext2_state.bin", " ", 180, ICON_POS_Y, event_handler, ID_INFO_EXT);
     #endif
     #if HAS_HEATED_BED
-      buttonBedstate = lv_big_button_create(scr, "F:/bmp_bed_state.bin", " ", TERN(HAS_MULTI_HOTEND, 271, 210), ICON_POS_Y, event_handler, ID_INFO_BED);
+      buttonBedstate = lv_big_button_create(scr, "F:/bmp_bed_state.bin", " ", TERN(HAS_MULTI_HOTEND, 340, 210), ICON_POS_Y, event_handler, ID_INFO_BED);
     #endif
 
     TERN_(HAS_HOTEND, labelExt1 = lv_label_create_empty(scr));

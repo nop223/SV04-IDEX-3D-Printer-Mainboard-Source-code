@@ -74,17 +74,20 @@ void lv_draw_advance_settings() {
   scr = lv_screen_create(ADVANCED_UI, machine_menu.AdvancedConfTitle);
 
   int index = 0;
-  lv_screen_menu_item(scr, machine_menu.PausePosition, PARA_UI_POS_X, PARA_UI_POS_Y, event_handler, ID_PAUSE_POS, index++);
-  lv_screen_menu_item(scr, machine_menu.FilamentConf, PARA_UI_POS_X, PARA_UI_POS_Y * 2, event_handler, ID_FILAMENT_SETTINGS, index++);
+  lv_screen_menu_item(scr, machine_menu.PausePosition, PARA_UI_POS_X, PARA_UI_POS_Y, event_handler, ID_PAUSE_POS, index);
+  index++;
+  lv_screen_menu_item(scr, machine_menu.FilamentConf, PARA_UI_POS_X, PARA_UI_POS_Y * 2, event_handler, ID_FILAMENT_SETTINGS, index);
+  index++;
   #if ENABLED(MKS_WIFI_MODULE)
-    lv_screen_menu_item(scr, machine_menu.WifiSettings, PARA_UI_POS_X, PARA_UI_POS_Y * 3, event_handler, ID_WIFI_PARA, index++);
+    lv_screen_menu_item(scr, machine_menu.WifiSettings, PARA_UI_POS_X, PARA_UI_POS_Y * 3, event_handler, ID_WIFI_PARA, index);
+    index++;
   #endif
   #if HAS_ROTARY_ENCODER
     lv_screen_menu_item(scr, machine_menu.EncoderSettings, PARA_UI_POS_X, PARA_UI_POS_Y * (index + 1), event_handler, ID_ENCODER_SETTINGS, index);
     index++;
   #endif
 
-  lv_big_button_create(scr, "F:/bmp_back70x40.bin", common_menu.text_back, PARA_UI_BACL_POS_X + 10, PARA_UI_BACL_POS_Y, event_handler, ID_ADVANCE_RETURN, true);
+  lv_big_button_create(scr, "F:/bmp_back70x40.bin", common_menu.text_back, PARA_UI_BACK_POS_X + 10, PARA_UI_BACK_POS_Y, event_handler, ID_ADVANCE_RETURN, true);
 }
 
 void lv_clear_advance_settings() {

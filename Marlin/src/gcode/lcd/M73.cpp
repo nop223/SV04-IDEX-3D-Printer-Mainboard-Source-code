@@ -22,73 +22,70 @@
 
 #include "../../inc/MarlinConfig.h"
 
-#if ENABLED(LCD_SET_PROGRESS_MANUALLY)
+#if ENABLED(SET_PROGRESS_MANUALLY)
 
 #include "../gcode.h"
 #include "../../lcd/marlinui.h"
 #include "../../sd/cardreader.h"
-#include "../../module/printcounter.h"
-
-#if ENABLED(DWIN_CREALITY_LCD_ENHANCED)
-  #include "../../lcd/e3v2/enhanced/dwin.h"
-#endif
-
-#if ENABLED(RTS_AVAILABLE)
-  #include "../../lcd/e3v2/creality/LCD_RTS.h"
-#endif
+#include "../../libs/numtostr.h"
 
 /**
- * M73: Set percentage complete (for display on LCD)
+ * M73: Set Print Progress
+ *
+ * Set next interaction countdown, current print progress
+ * percentage, and/or remaining time for display on the LCD.
+ *
+ * Parameters:
+ *   None        Report current values
+ *   C<minutes>  Set next interaction countdown
+ *   P<percent>  Set current print progress percentage (0-100)
+ *   R<minutes>  Set remaining time
  *
  * Example:
- *   M73 P25 ; Set progress to 25%
+ *   M73 P25.63 ; Set progress to 25.63%
+ *   M73 R456   ; Set remaining time to 456 minutes
+ *   M73 C12    ; Set next interaction countdown to 12 minutes
+ *   M73        ; Report current values
+ *
+ * M73 Progress: ---%; Time left: -----m; Change: -----m;
+ *
+ * When PRINT_PROGRESS_SHOW_DECIMALS is enabled - reports percent with 100% / 23.4% / 3.45% format
+ *
  */
 void GcodeSuite::M73() {
 
-  uint16_t remaining_time = 0;
-  uint16_t remaining_percent = 0;
-
-  #if ENABLED(DWIN_CREALITY_LCD_ENHANCED)
-
-    DWIN_Progress_Update();
-
-  #elif ENABLED(RTS_AVAILABLE)
-    if (parser.seenval('P')) {
-      remaining_percent = (unsigned char)((PROGRESS_SCALE) > 1
-        ? parser.value_float() * (PROGRESS_SCALE)
-        : parser.value_byte()
-      );
-
-      rtscheck.RTS_SndData(remaining_percent, PRINT_PROCESS_VP);
-      rtscheck.RTS_SndData(remaining_percent, PRINT_PROCESS_ICON_VP);
-
-      duration_t elapsed = print_job_timer.duration();
-      rtscheck.RTS_SndData(elapsed.value / 3600, PRINT_TIME_HOUR_VP);
-      rtscheck.RTS_SndData((elapsed.value % 3600) / 60, PRINT_TIME_MIN_VP);
-    }
-
-    #if ENABLED(USE_M73_REMAINING_TIME)
-      if (parser.seenval('R')) {
-        remaining_time = 60 * parser.value_ulong();
-        rtscheck.RTS_SndData(remaining_time / 3600, PRINT_SURPLUS_TIME_HOUR_VP);
-        rtscheck.RTS_SndData((remaining_time % 3600) / 60, PRINT_SURPLUS_TIME_MIN_VP);
-      }
-    #endif
-
-  #else
-    if (parser.seenval('P')) {
+  #if ENABLED(SET_PROGRESS_PERCENT)
+    if (parser.seenval('P'))
       ui.set_progress((PROGRESS_SCALE) > 1
         ? parser.value_float() * (PROGRESS_SCALE)
         : parser.value_byte()
       );
-    }
+  #endif
 
-    #if ENABLED(USE_M73_REMAINING_TIME)
-      if (parser.seenval('R')) {
-        ui.set_remaining_time(60 * parser.value_ulong());
-      }
-    #endif
+  #if ENABLED(SET_REMAINING_TIME)
+    if (parser.seenval('R')) ui.set_remaining_time(60 * parser.value_ulong());
+  #endif
+
+  #if ENABLED(SET_INTERACTION_TIME)
+    if (parser.seenval('C')) ui.set_interaction_time(60 * parser.value_ulong());
+  #endif
+
+  #if ENABLED(M73_REPORT)
+    if (TERN1(M73_REPORT_SD_ONLY, card.isStillPrinting())) {
+      SERIAL_ECHO_START();
+      SERIAL_ECHOPGM(" M73");
+      #if ENABLED(SET_PROGRESS_PERCENT)
+        SERIAL_ECHOPGM(" Progress: ", TERN(PRINT_PROGRESS_SHOW_DECIMALS, permyriadtostr4(ui.get_progress_permyriad()), ui.get_progress_percent()), "%;");
+      #endif
+      #if ENABLED(SET_REMAINING_TIME)
+        SERIAL_ECHOPGM(" Time left: ", ui.remaining_time / 60, "m;");
+      #endif
+      #if ENABLED(SET_INTERACTION_TIME)
+        SERIAL_ECHOPGM(" Change: ", ui.interaction_time / 60, "m;");
+      #endif
+      SERIAL_EOL();
+    }
   #endif
 }
 
-#endif // LCD_SET_PROGRESS_MANUALLY
+#endif // SET_PROGRESS_MANUALLY

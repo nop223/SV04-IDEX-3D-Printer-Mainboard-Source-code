@@ -25,22 +25,12 @@
  * Release version. Leave the Marlin version or apply a custom scheme.
  */
 #ifndef SHORT_BUILD_VERSION
-  #define SHORT_BUILD_VERSION "v1.15.A"
-#endif
-
-#ifndef DISPLAY_VERSION
-  #define DISPLAY_VERSION "v1.15.7"
-#endif
-
-
-#ifndef EEPROM_VERSION
-  #define EEPROM_VERSION "V90"
+  #define SHORT_BUILD_VERSION "bugfix-2.1.x"
 #endif
 
 /**
  * Verbose version identifier containing a unique identifier, such as the
  * vendor name, download location, GitHub account, etc.
- *
  */
 #ifndef DETAILED_BUILD_VERSION
   #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION
@@ -52,7 +42,7 @@
  * version was tagged.
  */
 #ifndef STRING_DISTRIBUTION_DATE
-  #define STRING_DISTRIBUTION_DATE "08-JUL-2026"
+  #define STRING_DISTRIBUTION_DATE "2026-07-25"
 #endif
 
 /**
@@ -62,7 +52,7 @@
  * to alert users to major changes.
  */
 
-#define MARLIN_HEX_VERSION 02000903
+#define MARLIN_HEX_VERSION 02010300
 #ifndef REQUIRED_CONFIGURATION_H_VERSION
   #define REQUIRED_CONFIGURATION_H_VERSION MARLIN_HEX_VERSION
 #endif
@@ -76,15 +66,15 @@
  * (Other behaviors are given by the firmware version and capabilities report.)
  */
 #ifndef PROTOCOL_VERSION
-  #define PROTOCOL_VERSION "v1.15.7"
+  #define PROTOCOL_VERSION "1.0"
 #endif
 
 /**
  * Define a generic printer name to be output to the LCD after booting Marlin.
  */
-//#ifndef MACHINE_NAME
-//  #define MACHINE_NAME "Sovol SV04"
-//#endif
+#ifndef MACHINE_NAME
+  #define MACHINE_NAME "3D Printer"
+#endif
 
 /**
  * Website where users can find Marlin source code for the binary installed on the
@@ -92,7 +82,7 @@
  * providing the source code to your customers.)
  */
 #ifndef SOURCE_CODE_URL
-  #define SOURCE_CODE_URL "github.com/Bjoern70/SV04-IDEX-3D-Printer-Mainboard-Source-code"
+  #define SOURCE_CODE_URL "github.com/MarlinFirmware/Marlin"
 #endif
 
 /**
@@ -111,8 +101,8 @@
 #endif
 
 /**
- * Set the vendor info the serial USB interface, if changable
- * Currently only supported by DUE platform
+ * Set the vendor info the serial USB interface, if changeable.
+ * Currently only supported by DUE platform.
  */
 #ifndef USB_DEVICE_VENDOR_ID
   #define USB_DEVICE_VENDOR_ID            0x03EB /* ATMEL VID */
@@ -130,4 +120,3 @@
   #define USB_DEVICE_PRODUCT_NAME         MACHINE_NAME
 #endif
 #define USB_DEVICE_SERIAL_NAME            "123985739853"
-

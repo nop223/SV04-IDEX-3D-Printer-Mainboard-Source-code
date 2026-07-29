@@ -27,39 +27,15 @@
 #include "../gcode.h"
 #include "../../lcd/marlinui.h"
 
-#if ENABLED(RTS_AVAILABLE)
-  #include "../../lcd/e3v2/creality/LCD_RTS.h"
-#endif
-
 /**
  * M117: Set LCD Status Message
  */
 void GcodeSuite::M117() {
 
-  #if ENABLED(RTS_AVAILABLE)
-    if (parser.string_arg && parser.string_arg[0])
-    {
-      for(int j = 0;j < FileNameLen;j ++)
-      {
-        // clean print file
-        rtscheck.RTS_SndData(0, PRINT_FILE_TEXT_VP + j);
-      }
-      rtscheck.RTS_SndData(parser.string_arg, PRINT_FILE_TEXT_VP);
-      if (rtscheck.RTS_presets.debug_enabled)  //get debug state
-      {
-        //Debug enabled
-        SERIAL_ECHOLNPGM("RTS =>  M117. Return to display screen #", rtscheck.RTS_currentScreen);
-        sprintf(rtscheck.RTS_infoBuf, "M117: Last[%d] Goto Cur[%d] waitW=%d DXC=%d saveDXC=%d", rtscheck.RTS_lastScreen, rtscheck.RTS_currentScreen, RTS_waitway, dualXPrintingModeStatus, save_dual_x_carriage_mode);
-        rtscheck.RTS_Debug_Info();
-      }
-      rtscheck.RTS_SndData(ExchangePageBase + rtscheck.RTS_currentScreen, ExchangepageAddr);
-    }
-  #else
-    if (parser.string_arg && parser.string_arg[0])
-      ui.set_status(parser.string_arg);
-    else
-      ui.reset_status();
-  #endif
+  if (parser.has_string())
+    ui.set_status_no_expire(parser.string_arg);
+  else
+    ui.reset_status();
 
 }
 

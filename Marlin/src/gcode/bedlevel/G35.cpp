@@ -29,16 +29,12 @@
 #include "../../module/probe.h"
 #include "../../feature/bedlevel/bedlevel.h"
 
-#if HAS_MULTI_HOTEND
-  #include "../../module/tool_change.h"
+#if ENABLED(BLTOUCH)
+  #include "../../feature/bltouch.h"
 #endif
 
 #define DEBUG_OUT ENABLED(DEBUG_LEVELING_FEATURE)
 #include "../../core/debug_out.h"
-
-#if ENABLED(RTS_AVAILABLE)
-  #include "../../lcd/e3v2/creality/LCD_RTS.h"
-#endif
 
 //
 // Define tramming point names.
@@ -57,17 +53,10 @@
  *               41 - Counter-Clockwise M4
  *               50 - Clockwise M5
  *               51 - Counter-Clockwise M5
- **/
+ */
 void GcodeSuite::G35() {
+
   DEBUG_SECTION(log_G35, "G35", DEBUGGING(LEVELING));
-  if (rtscheck.RTS_presets.debug_enabled)  //get debug state
-  {
-    //Debug enabled
-    SERIAL_ECHOLNPGM("RTS =>  G35. Last screen #", rtscheck.RTS_currentScreen);
-    sprintf(rtscheck.RTS_infoBuf, "G35: Last[%d]<Cur[%d] waitW=%d DXC=%d saveDXC=%d", rtscheck.RTS_lastScreen, rtscheck.RTS_currentScreen, RTS_waitway, dualXPrintingModeStatus, save_dual_x_carriage_mode);
-    rtscheck.RTS_Debug_Info();
-  }
-  rtscheck.RTS_lastScreen = rtscheck.RTS_currentScreen;
 
   if (DEBUGGING(LEVELING)) log_machine_info();
 
@@ -75,7 +64,7 @@ void GcodeSuite::G35() {
 
   const uint8_t screw_thread = parser.byteval('S', TRAMMING_SCREW_THREAD);
   if (!WITHIN(screw_thread, 30, 51) || screw_thread % 10 > 1) {
-    SERIAL_ECHOLNPGM("?(S)crew thread must be 30, 31, 40, 41, 50, or 51.");
+    SERIAL_ECHOLNPGM(GCODE_ERR_MSG("(S)crew thread must be 30, 31, 40, 41, 50, or 51."));
     return;
   }
 
@@ -90,47 +79,38 @@ void GcodeSuite::G35() {
     set_bed_leveling_enabled(false);
   #endif
 
-  #if ENABLED(CNC_WORKSPACE_PLANES)
-    workspace_plane = PLANE_XY;
-  #endif
+  TERN_(CNC_WORKSPACE_PLANES, workspace_plane = PLANE_XY);
 
-  // Always home with tool 0 active
-  #if HAS_MULTI_HOTEND
-    const uint8_t old_tool_index = active_extruder;
-    tool_change(0, true);
-  #endif
+  probe.use_probing_tool();
 
   // Disable duplication mode on homing
-  TERN_(HAS_DUPLICATION_MODE, set_duplication_enabled(false));
+  TERN_(HAS_DUPLICATION_MODE, motion.set_extruder_duplication(false));
 
   // Home only Z axis when X and Y is trusted, otherwise all axes, if needed before this procedure
-  if (!all_axes_trusted()) process_subcommands_now_P(PSTR("G28Z"));
+  if (!motion.all_axes_trusted()) process_subcommands_now(F("G28Z"));
 
   bool err_break = false;
 
   // Probe all positions
-  LOOP_L_N(i, G35_PROBE_COUNT) {
-
-    // In BLTOUCH HS mode, the probe travels in a deployed state.
-    // Users of G35 might have a badly misaligned bed, so raise Z by the
-    // length of the deployed pin (BLTOUCH stroke < 7mm)
-    do_blocking_move_to_z(SUM_TERN(BLTOUCH_HS_MODE, Z_CLEARANCE_BETWEEN_PROBES, 7));
-    const float z_probed_height = probe.probe_at_point(tramming_points[i], PROBE_PT_RAISE, 0, true);
-
+  for (uint8_t i = 0; i < G35_PROBE_COUNT; ++i) {
+    const float z_probed_height = probe.probe_at_point(tramming_points[i], PROBE_PT_RAISE);
     if (isnan(z_probed_height)) {
-      SERIAL_ECHOPGM("G35 failed at point ", i + 1, " (");
-      SERIAL_ECHOPGM_P((char *)pgm_read_ptr(&tramming_point_name[i]));
-      SERIAL_CHAR(')');
-      SERIAL_ECHOLNPGM_P(SP_X_STR, tramming_points[i].x, SP_Y_STR, tramming_points[i].y);
+      SERIAL_ECHOLN(
+        F("G35 failed at point "), i + 1,
+        F(" ("), FPSTR(pgm_read_ptr(&tramming_point_name[i])), C(')'),
+        FPSTR(SP_X_STR), tramming_points[i].x,
+        FPSTR(SP_Y_STR), tramming_points[i].y
+      );
       err_break = true;
       break;
     }
 
     if (DEBUGGING(LEVELING)) {
-      DEBUG_ECHOPGM("Probing point ", i + 1, " (");
-      DEBUG_ECHOPGM_P((char *)pgm_read_ptr(&tramming_point_name[i]));
-      DEBUG_CHAR(')');
-      DEBUG_ECHOLNPGM_P(SP_X_STR, tramming_points[i].x, SP_Y_STR, tramming_points[i].y, SP_Z_STR, z_probed_height);
+      DEBUG_ECHOLN(
+        F("Probing point "), i + 1, F(" ("), FPSTR(pgm_read_ptr(&tramming_point_name[i])), C(')'),
+        FPSTR(SP_X_STR), tramming_points[i].x, FPSTR(SP_Y_STR), tramming_points[i].y,
+        FPSTR(SP_Z_STR), z_probed_height
+      );
     }
 
     z_measured[i] = z_probed_height;
@@ -140,57 +120,29 @@ void GcodeSuite::G35() {
     const float threads_factor[] = { 0.5, 0.7, 0.8 };
 
     // Calculate adjusts
-    LOOP_S_L_N(i, 0, G35_PROBE_COUNT) {
+    for (uint8_t i = 1; i < G35_PROBE_COUNT; ++i) {
       const float diff = z_measured[0] - z_measured[i],
                   adjust = ABS(diff) < 0.001f ? 0 : diff / threads_factor[(screw_thread - 30) / 10];
 
       const int full_turns = trunc(adjust);
       const float decimal_part = adjust - float(full_turns);
       const int minutes = trunc(decimal_part * 60.0f);
-      char turns[4];
-      char mins[4];
-      itoa(ABS(full_turns), turns, 10);
-      itoa(ABS(minutes), mins, 10);
-
-      char str[24];
-      strcpy(str, (screw_thread & 1) == (adjust > 0) ? "CCW " : "CW ");
-      strcat(str, turns);
-      strcat(str, " turns  & ");
-      strcat(str, mins);
-      strcat(str, " mins");
 
       SERIAL_ECHOPGM("Turn ");
       SERIAL_ECHOPGM_P((char *)pgm_read_ptr(&tramming_point_name[i]));
-      SERIAL_ECHOPGM(" ", str);
-
-      #if ENABLED(RTS_AVAILABLE)
-        unsigned long addr = AUTO_TRAM_1TEXT_VP + i * 24;
-        for(int j = 0; j < 24; j++)
-        {
-          rtscheck.RTS_SndData(0, addr + j);
-        }
-        rtscheck.RTS_SndData(str, addr);
-      #endif
+      SERIAL_ECHOPGM(" ", (screw_thread & 1) == (adjust > 0) ? "CCW" : "CW", " by ", ABS(full_turns), " turns");
+      if (minutes) SERIAL_ECHOPGM(" and ", ABS(minutes), " minutes");
+      if (ENABLED(REPORT_TRAMMING_MM)) SERIAL_ECHOPGM(" (", -diff, "mm)");
+      SERIAL_EOL();
     }
-    if (rtscheck.RTS_presets.debug_enabled)  //get debug state
-    {
-      //Debug enabled
-      SERIAL_ECHOLNPGM("RTS =>  G35. Screen #57 triggered");
-      sprintf(rtscheck.RTS_infoBuf, "G35: Last[%d] Cur[%d]<57 waitW=%d DXC=%d saveDXC=%d", rtscheck.RTS_lastScreen, rtscheck.RTS_currentScreen, RTS_waitway, dualXPrintingModeStatus, save_dual_x_carriage_mode);
-      rtscheck.RTS_Debug_Info();
-    }
-    rtscheck.RTS_currentScreen = 57;
-    rtscheck.RTS_SndData(ExchangePageBase + 57, ExchangepageAddr);
   }
   else
     SERIAL_ECHOLNPGM("G35 aborted.");
 
   // Restore the active tool after homing
-  #if HAS_MULTI_HOTEND
-    tool_change(old_tool_index, DISABLED(PARKING_EXTRUDER)); // Fetch previous toolhead if not PARKING_EXTRUDER
-  #endif
+  probe.use_probing_tool(false);
 
-  #if BOTH(HAS_LEVELING, RESTORE_LEVELING_AFTER_G35)
+  #if ALL(HAS_LEVELING, RESTORE_LEVELING_AFTER_G35)
     set_bed_leveling_enabled(leveling_was_active);
   #endif
 
@@ -201,7 +153,7 @@ void GcodeSuite::G35() {
   move_to_tramming_wait_pos();
 
   // After this operation the Z position needs correction
-  set_axis_never_homed(Z_AXIS);
+  motion.set_axis_never_homed(Z_AXIS);
 }
 
 #endif // ASSISTED_TRAMMING

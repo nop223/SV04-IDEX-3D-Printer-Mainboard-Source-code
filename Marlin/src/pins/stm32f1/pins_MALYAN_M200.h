@@ -41,14 +41,12 @@
   #define FLASH_EEPROM_EMULATION
 #endif
 
-#define SDSS                           SD_SS_PIN  // Also in HAL/STM32F1/spi_pins.h
-
 // Based on PWM timer usage, we have to use these timers and soft PWM for the fans
 // On STM32F103:
 // PB3, PB6, PB7, and PB8 can be used with pwm, which rules out TIM2 and TIM4.
 // On STM32F070, 16 and 17 are in use, but 1 and 3 are available.
-#define STEP_TIMER                             1
-#define TEMP_TIMER                             3
+#define STEP_TIMER  1
+#define TEMP_TIMER  3
 
 //
 // Limit Switches

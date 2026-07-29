@@ -52,36 +52,35 @@ static void event_handler(lv_obj_t *obj, lv_event_t event) {
       queue.inject_P(G28_STR);
       break;
     case ID_H_X:
-      queue.inject_P(PSTR("G28X"));
+      queue.inject(F("G28X"));
       break;
     case ID_H_Y:
-      queue.inject_P(PSTR("G28Y"));
+      queue.inject(F("G28Y"));
       break;
     case ID_H_Z:
-      queue.inject_P(PSTR("G28Z"));
+      queue.inject(F("G28Z"));
       break;
     case ID_H_OFF_ALL:
-      queue.inject_P(PSTR("M84"));
+      queue.inject(F("M84"));
       break;
     case ID_H_OFF_XY:
-      queue.inject_P(PSTR("M84XY"));
+      queue.inject(F("M84XY"));
       break;
     case ID_H_RETURN:
-      clear_cur_ui();
-      draw_return_ui();
+      goto_previous_ui();
       break;
   }
 }
 
 void lv_draw_home() {
   scr = lv_screen_create(ZERO_UI);
-  lv_big_button_create(scr, "F:/bmp_zeroAll.bin", home_menu.home_all, INTERVAL_V, titleHeight, event_handler, ID_H_ALL);
-  lv_big_button_create(scr, "F:/bmp_zeroX.bin", home_menu.home_x, BTN_X_PIXEL + INTERVAL_V * 2, titleHeight, event_handler, ID_H_X);
-  lv_big_button_create(scr, "F:/bmp_zeroY.bin", home_menu.home_y, BTN_X_PIXEL * 2 + INTERVAL_V * 3, titleHeight, event_handler, ID_H_Y);
-  lv_big_button_create(scr, "F:/bmp_zeroZ.bin", home_menu.home_z, BTN_X_PIXEL * 3 + INTERVAL_V * 4, titleHeight, event_handler, ID_H_Z);
-  lv_big_button_create(scr, "F:/bmp_function1.bin", set_menu.motoroff, INTERVAL_V, BTN_Y_PIXEL + INTERVAL_H + titleHeight, event_handler, ID_H_OFF_ALL);
-  lv_big_button_create(scr, "F:/bmp_function1.bin", set_menu.motoroffXY, BTN_X_PIXEL + INTERVAL_V * 2, BTN_Y_PIXEL + INTERVAL_H + titleHeight, event_handler, ID_H_OFF_XY);
-  lv_big_button_create(scr, "F:/bmp_return.bin", common_menu.text_back, BTN_X_PIXEL * 3 + INTERVAL_V * 4, BTN_Y_PIXEL + INTERVAL_H + titleHeight, event_handler, ID_H_RETURN);
+  lv_big_button_create(scr, "F:/bmp_zeroAll.bin", home_menu.home_all, INTERVAL_W, titleHeight, event_handler, ID_H_ALL);
+  lv_big_button_create(scr, "F:/bmp_zeroX.bin", home_menu.home_x, BTN_SIZE_X + INTERVAL_W * 2, titleHeight, event_handler, ID_H_X);
+  lv_big_button_create(scr, "F:/bmp_zeroY.bin", home_menu.home_y, BTN_SIZE_X * 2 + INTERVAL_W * 3, titleHeight, event_handler, ID_H_Y);
+  lv_big_button_create(scr, "F:/bmp_zeroZ.bin", home_menu.home_z, BTN_SIZE_X * 3 + INTERVAL_W * 4, titleHeight, event_handler, ID_H_Z);
+  lv_big_button_create(scr, "F:/bmp_function1.bin", set_menu.motoroff, INTERVAL_W, BTN_SIZE_Y + INTERVAL_H + titleHeight, event_handler, ID_H_OFF_ALL);
+  lv_big_button_create(scr, "F:/bmp_function1.bin", set_menu.motoroffXY, BTN_SIZE_X + INTERVAL_W * 2, BTN_SIZE_Y + INTERVAL_H + titleHeight, event_handler, ID_H_OFF_XY);
+  lv_big_button_create(scr, "F:/bmp_return.bin", common_menu.text_back, BTN_SIZE_X * 3 + INTERVAL_W * 4, BTN_SIZE_Y + INTERVAL_H + titleHeight, event_handler, ID_H_RETURN);
 }
 
 void lv_clear_home() {

@@ -21,11 +21,8 @@
  */
 
 #include "../gcode.h"
-#include "../../module/stepper.h"
+#include "../../module/planner.h"
 #include "../../lcd/marlinui.h"
-#if ENABLED(RTS_AVAILABLE)
-  #include "../../lcd/e3v2/creality/LCD_RTS.h"
-#endif
 
 /**
  * G4: Dwell S<seconds> or P<milliseconds>
@@ -41,17 +38,8 @@ void GcodeSuite::G4() {
     SERIAL_ECHOLNPGM(STR_Z_MOVE_COMP);
   #endif
 
-  if (!ui.has_status()) LCD_MESSAGEPGM(MSG_DWELL);
-
-  dwell(dwell_ms);
-  #if ENABLED(RTS_AVAILABLE)
-    if (rtscheck.RTS_presets.debug_enabled)  //get debug state
-    {
-      //Debug enabled
-      SERIAL_ECHOLNPGM("RTS =>  G4. Return to display screen #", rtscheck.RTS_currentScreen);
-      sprintf(rtscheck.RTS_infoBuf, "G4: Last[%d] Goto Cur[%d] waitW=%d DXC=%d", rtscheck.RTS_lastScreen, rtscheck.RTS_currentScreen, RTS_waitway, dualXPrintingModeStatus);
-      rtscheck.RTS_Debug_Info();
-    }
-    rtscheck.RTS_SndData(ExchangePageBase + rtscheck.RTS_currentScreen, ExchangepageAddr);//Display update
-  #endif
+  if (dwell_ms) {
+    if (!ui.has_status()) LCD_MESSAGE(MSG_DWELL);
+    dwell(dwell_ms);
+  }
 }

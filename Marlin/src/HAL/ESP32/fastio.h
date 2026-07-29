@@ -37,16 +37,26 @@
 // Set pin as output
 #define _SET_OUTPUT(IO)         pinMode(IO, OUTPUT)
 
+// TODO: Store set modes in an array and use those to get the mode
+#define _IS_OUTPUT(IO)           true
+#define _IS_INPUT(IO)            true
+
 // Set pin as input with pullup mode
 #define _PULLUP(IO, v)          pinMode(IO, v ? INPUT_PULLUP : INPUT)
 
-// Read a pin wrapper
-#define READ(IO)                (IS_I2S_EXPANDER_PIN(IO) ? i2s_state(I2S_EXPANDER_PIN_INDEX(IO)) : digitalRead(IO))
+#if ENABLED(USE_ESP32_EXIO)
+  // Read a pin wrapper
+  #define READ(IO)                digitalRead(IO)
+  // Write to a pin wrapper
+  #define WRITE(IO, v)            (IO >= 100 ? Write_EXIO(IO, v) : digitalWrite(IO, v))
+#else
+  // Read a pin wrapper
+  #define READ(IO)                (IS_I2S_EXPANDER_PIN(IO) ? i2s_state(I2S_EXPANDER_PIN_INDEX(IO)) : digitalRead(IO))
+  // Write to a pin wrapper
+  #define WRITE(IO, v)            (IS_I2S_EXPANDER_PIN(IO) ? i2s_write(I2S_EXPANDER_PIN_INDEX(IO), v) : digitalWrite(IO, v))
+#endif
 
-// Write to a pin wrapper
-#define WRITE(IO, v)            (IS_I2S_EXPANDER_PIN(IO) ? i2s_write(I2S_EXPANDER_PIN_INDEX(IO), v) : digitalWrite(IO, v))
-
-// Set pin as input wrapper
+// Set pin as input wrapper (0x80 | (v << 5) | (IO - 100))
 #define SET_INPUT(IO)           _SET_INPUT(IO)
 
 // Set pin as input with pullup wrapper
@@ -63,6 +73,9 @@
 
 // Set pin as output and init
 #define OUT_WRITE(IO,V)         do{ _SET_OUTPUT(IO); WRITE(IO,V); }while(0)
+
+#define IS_OUTPUT(IO)            _IS_OUTPUT(IO)
+#define IS_INPUT(IO)             _IS_INPUT(IO)
 
 // digitalRead/Write wrappers
 #define extDigitalRead(IO)      digitalRead(IO)
