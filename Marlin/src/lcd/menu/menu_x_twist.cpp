@@ -21,7 +21,7 @@
  */
 #include "../../inc/MarlinConfigPre.h"
 
-#if ENABLED(X_AXIS_TWIST_COMPENSATION)
+#if ENABLED(X_AXIS_TWIST_COMPENSATION) && HAS_MARLINUI_MENU
 
 #include "menu_item.h"
 #include "menu_addon.h"

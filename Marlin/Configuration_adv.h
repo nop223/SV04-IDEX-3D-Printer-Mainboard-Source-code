@@ -1070,7 +1070,7 @@
  * Z Steppers Auto-Alignment
  * Add the G34 command to align multiple Z steppers using a bed probe.
  */
-#define Z_STEPPER_AUTO_ALIGN
+//#define Z_STEPPER_AUTO_ALIGN
 #if ENABLED(Z_STEPPER_AUTO_ALIGN)
   /**
    * Define probe X and Y positions for Z1, Z2 [, Z3 [, Z4]]
@@ -2640,7 +2640,7 @@
  * Use M871 to set temperature/offset values manually.
  * For more details see https://marlinfw.org/docs/features/probe_temp_compensation.html
  */
-#define PTC_PROBE    // Compensate based on probe temperature
+//#define PTC_PROBE    // Compensate based on probe temperature
 //#define PTC_BED      // Compensate based on bed temperature
 //#define PTC_HOTEND   // Compensate based on hotend temperature
 
@@ -2655,10 +2655,10 @@
   #if ENABLED(PTC_PROBE)
     // Probe temperature calibration generates a table of values starting at PTC_PROBE_START
     // (e.g., 30), in steps of PTC_PROBE_RES (e.g., 5) with PTC_PROBE_COUNT (e.g., 10) samples.
-    #define PTC_PROBE_START   30    // (°C)
-    #define PTC_PROBE_RES      5    // (°C)
-    #define PTC_PROBE_COUNT   10
-    #define PTC_PROBE_ZOFFS   { 0 } // (µm) Z adjustments per sample
+    //#define PTC_PROBE_START   30    // (°C)
+    //#define PTC_PROBE_RES      5    // (°C)
+    //#define PTC_PROBE_COUNT   10
+    //#define PTC_PROBE_ZOFFS   { 0 } // (µm) Z adjustments per sample
   #endif
 
   #if ENABLED(PTC_BED)
@@ -2683,16 +2683,16 @@
     #define PTC_PARK_POS   { 0, 0, 100 }
 
     // Probe position to probe and wait for probe to reach target temperature
-    //#define PTC_PROBE_POS  { 12.0f, 7.3f } // Example: MK52 magnetic heatbed
-    #define PTC_PROBE_POS  { 90, 100 }
+    ////#define PTC_PROBE_POS  { 12.0f, 7.3f } // Example: MK52 magnetic heatbed
+    //#define PTC_PROBE_POS  { 90, 100 }
 
     // The temperature the probe should be at while taking measurements during
     // bed temperature calibration.
-    #define PTC_PROBE_TEMP    30  // (°C)
+    //#define PTC_PROBE_TEMP    30  // (°C)
 
     // Height above Z=0.0 to raise the nozzle. Lowering this can help the probe to heat faster.
     // Note: The Z=0.0 offset is determined by the probe Z offset (e.g., as set with M851 Z).
-    #define PTC_PROBE_HEATING_OFFSET 0.5  // (mm)
+    //#define PTC_PROBE_HEATING_OFFSET 0.5  // (mm)
   #endif
 #endif // PTC_PROBE || PTC_BED || PTC_HOTEND
 

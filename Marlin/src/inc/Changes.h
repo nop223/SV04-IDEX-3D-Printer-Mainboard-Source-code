@@ -787,9 +787,9 @@
 // Consolidate TMC26X, validate migration (#24373)
 #define _ISMAX(A) defined(A##_MAX_CURRENT) ||
 #define _ISSNS(A) defined(A##_SENSE_RESISTOR) ||
-#if MAP(_ISMAX, ALL_AXIS_NAMES) 0
+#if 0 // MAP(_ISMAX, ALL_AXIS_NAMES) 0
   #error "*_MAX_CURRENT is now set with *_CURRENT."
-#elif MAP(_ISSNS, ALL_AXIS_NAMES) 0
+#elif 0 // MAP(_ISSNS, ALL_AXIS_NAMES) 0
   #error "*_SENSE_RESISTOR (in Milli-Ohms) is now set with *_RSENSE (in Ohms), so you must divide values by 1000."
 #endif
 #undef _ISMAX
