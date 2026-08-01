@@ -192,7 +192,7 @@
   //#define EXP3_08_PIN                       PB15
   
   #define LCD_PINS_RS                       PB12
-  #define LCD_PINS_ENABLE                   PB15
+  #define LCD_PINS_EN                       PB15
   #define LCD_PINS_D4                       PB13
 
   #define BTN_ENC                           PB2
