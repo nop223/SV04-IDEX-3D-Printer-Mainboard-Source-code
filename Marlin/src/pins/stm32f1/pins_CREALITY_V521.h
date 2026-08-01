@@ -62,7 +62,12 @@
 //
 // Servos
 //
-#define SERVO0_PIN                          PD13  // BLTouch OUT
+#ifdef BLTOUCH
+  #define SERVO0_PIN       PD13  // BLTouch OUT
+  #define Z_MIN_PIN        PD12
+#else
+  #define Z_MIN_PIN        PE1
+#endif
 
 //
 // Limit Switches
@@ -70,8 +75,8 @@
 #define X_MIN_PIN                           PD10  // X
 #define X_MAX_PIN                           PE15  // X2
 #define Y_STOP_PIN                          PE0   // Y
-#define Z_MIN_PIN                           PE1   // Z
-#define Z_MAX_PIN                           PE2   // Z2
+// #define Z_MIN_PIN       PE1
+#define Z2_MIN_PIN         					PE2
 
 #ifndef Z_MIN_PROBE_PIN
   #define Z_MIN_PROBE_PIN                   PD12  // BLTouch IN
@@ -105,6 +110,9 @@
 #define Z_STEP_PIN                          PB3
 #define Z_DIR_PIN                           PD7
 
+#define Z2_ENABLE_PIN                       PC5
+  #define Z2_STEP_PIN                       PA7
+  #define Z2_DIR_PIN                        PA6
 #define E0_ENABLE_PIN                       PD4
 #define E0_STEP_PIN                         PD1
 #define E0_DIR_PIN                          PD0
@@ -125,6 +133,13 @@
 // Release PB4 (Y_ENABLE_PIN) from JTAG NRST role
 //
 #define DISABLE_JTAG
+//
+// SuicidePin
+//
+#define SUICIDE_PIN                         PE4   // Connector J2
+#ifndef SUICIDE_PIN_STATE
+  #define SUICIDE_PIN_STATE                 LOW
+#endif
 
 //
 // Temperature Sensors
@@ -166,14 +181,25 @@
    *   GND | 9 10 | 5V
    *        ------
    */
-  #define EXP3_01_PIN                       PC6
-  #define EXP3_02_PIN                       PB2
-  #define EXP3_03_PIN                       PB10
-  #define EXP3_04_PIN                       PE8
-  #define EXP3_05_PIN                       PB14
-  #define EXP3_06_PIN                       PB13
-  #define EXP3_07_PIN                       PB12
-  #define EXP3_08_PIN                       PB15
+   
+  //#define EXP3_01_PIN                       PC6
+  //#define EXP3_02_PIN                       PB2
+  //#define EXP3_03_PIN                       PB10
+  //#define EXP3_04_PIN                       PE8
+  //#define EXP3_05_PIN                       PB14
+  //#define EXP3_06_PIN                       PB13
+  //#define EXP3_07_PIN                       PB12  
+  //#define EXP3_08_PIN                       PB15
+  
+  #define LCD_PINS_RS                       PB12
+  #define LCD_PINS_ENABLE                   PB15
+  #define LCD_PINS_D4                       PB13
+
+  #define BTN_ENC                           PB2
+  #define BTN_EN1                           PB10
+  #define BTN_EN2                           PB14
+
+  #define BEEPER_PIN                        PC6  
 
 #elif ANY(VET6_12864_LCD, DWIN_VET6_CREALITY_LCD)
 
